@@ -77,15 +77,15 @@ namespace Capstone
             bool toggle = false;
             while (!toggle)
             {
-                Console.WriteLine();
-                Console.WriteLine($"(1) Display Vending Machine Items");
-                Console.WriteLine($"(2) Purchase");
-                Console.WriteLine($"(3) Exit");
-                string userInput = Console.ReadLine();
+                string userInput = HelperMethods.PrintMainMenu();
 
                 if (userInput == "1")
                 {
-                    ShowInventory(machine);
+                    List<string> inventory = machine.ShowInventory();
+                    HelperMethods.PrintList(inventory);
+                    Console.WriteLine();
+                    Console.WriteLine("Press enter to continue after browsing the wonderful selection.");
+                    Console.ReadLine();
                 }
                 else if (userInput == "2")
                 {
@@ -97,47 +97,27 @@ namespace Capstone
                 }
                 else if (userInput == "4")
                 {
-
+                    decimal totalSales = bank.TotalSales;
+                    List<string> salesList = machine.GenerateSalesList();
+                    HelperMethods.LogSales(salesList, totalSales);
                 }
                 else
                 {
-                    Console.WriteLine("Wtf?  Must be 1 - 3");
+                    HelperMethods.NotAnOption();
                 }
 
             }
-        }
-
-        static void ShowInventory(VendingMachine machine)
-        {
-            foreach (KeyValuePair<string, Item> item in machine.Inventory)
-            {
-                string location = item.Key;
-                string itemName = item.Value.ProductName;
-                decimal price = item.Value.Price;
-                string quantity = item.Value.Quantity.ToString();
-                if (quantity == "0")
-                {
-                    quantity = "SOLD OUT";
-                }
-
-                Console.WriteLine($"{location}|{itemName}|{price}|{quantity}");
-            }
-            Console.WriteLine("Press enter to continue after browsing the wonderful selection.");
-            Console.ReadLine();
         }
 
         static void PurchaseMenu(VendingMachine machine, Bank bank)
         {
             bool toggle = false;
+
             while (!toggle)
             {
-                Console.WriteLine();
-                Console.WriteLine($"(1) Feed Money");
-                Console.WriteLine($"(2) Select Product");
-                Console.WriteLine($"(3) Finish Transaction");
-                Console.WriteLine();
-                Console.WriteLine($"Current Money Provided: ${bank.Balance:C2}");
-                string userInput = Console.ReadLine();
+                decimal balance = bank.Balance;
+
+                string userInput = HelperMethods.PurchaseMenu(balance);
 
                 if (userInput == "1")
                 {
@@ -145,17 +125,24 @@ namespace Capstone
                 }
                 else if (userInput == "2")
                 {
-                    ShowInventory(machine);
+                    List<string> inventory = machine.ShowInventory();
+                    HelperMethods.PrintList(inventory);
                     Console.WriteLine($"Please select an item.");
                     string userSelection = Console.ReadLine();
                     PurchaseItem(userSelection, machine, bank);
-
                 }
                 else if (userInput == "3")
                 {
-
-
+                    decimal leftoverBalance = bank.Balance;
+                    string change = bank.MakeChange();
+                    Console.WriteLine(change);
+                    string message = $"GIVE CHANGE: {leftoverBalance:C2} {bank.Balance:C2}";
+                    HelperMethods.LogMethod(message);
                     toggle = true;
+                }
+                else
+                {
+                    HelperMethods.NotAnOption();
                 }
 
             }
@@ -167,14 +154,13 @@ namespace Capstone
             bool toggle = false;
             while (!toggle)
             {
-                Console.WriteLine();
-                Console.WriteLine($"Please insert whole dollar amounts.");
-                Console.Write("$");
-                string userInput = Console.ReadLine();
+                string userInput = HelperMethods.AskForMoney();
                 try
                 {
                     int userAmount = int.Parse(userInput);
-                    bank.Balance += userAmount;
+                    bank.FeedMoney(userAmount);
+                    string message = $"FEED MONEY: {userAmount:C2} {bank.Balance:C2}";
+                    HelperMethods.LogMethod(message);
                     toggle = true;
                 }
                 catch (Exception e)
@@ -183,76 +169,59 @@ namespace Capstone
                     Console.WriteLine("Whole numbers dummy!");
                 }
             }
-
         }
 
         static void PurchaseItem(string userInput, VendingMachine machine, Bank bank)
         {
             userInput = userInput.ToUpper();
-            foreach (KeyValuePair<string, Item> item in machine.Inventory)
+
+            if (machine.Inventory.ContainsKey(userInput))
             {
-                //if selection is valid
-                if (item.Key == userInput)
+                foreach (KeyValuePair<string, Item> item in machine.Inventory)
                 {
-                    if (item.Value.Quantity == 0)
+                    //if selection is valid
+                    if (item.Key == userInput)
                     {
-                        //tell sold out
-                        Console.WriteLine("Sorry, that item is sold out.");
-                    }
-                    //check if balance is enough for item cost
-                    else if (item.Value.Price <= bank.Balance)
-                    {
-                        decimal beforeBalance = bank.Balance;
+                        if (item.Value.Quantity == 0)
+                        {
+                            //tell sold out
+                            Console.WriteLine("Sorry, that item is sold out.");
+                        }
+                        //check if balance is enough for item cost
+                        else if (item.Value.Price <= bank.Balance)
+                        {
+                            decimal beforeBalance = bank.Balance;
 
-                        //dispense item and update inventory
-                        bank.Balance -= item.Value.Price;
-                        Console.WriteLine();
-                        Console.WriteLine($"{item.Value.ProductName}|{item.Value.Price}|${bank.Balance} remaining");
-                        Console.WriteLine($"{item.Value.MakeSound()}");
+                            //dispense item and update inventory
+                            bank.UpdateMoney(item.Value.Price);
+                            Console.WriteLine();
+                            Console.WriteLine($"{item.Value.ProductName}|{item.Value.Price}|${bank.Balance} remaining");
+                            Console.WriteLine($"{item.Value.MakeSound()}");
 
-                        //log method for purchases
-                        //place interpolated string into Log method
-                        string auditLine = $"{DateTime.Now.Date:MM/dd/yyyy} {DateTime.Now.Date:hh:mm:ss tt} " +
-                            $"{item.Value.ProductName} {item.Key} ${beforeBalance} ${bank.Balance}";
-                        LogMethod(auditLine);
+                            //log method for purchases
+                            //place interpolated string into Log method
+                            string auditLine = $"{item.Value.ProductName} {item.Key} ${beforeBalance} ${bank.Balance}";
+                            HelperMethods.LogMethod(auditLine);
 
-                        //log for sales of item count
-                        machine.Sales[item.Value.ProductName]++;
+                            //log for sales of item count
+                            machine.Sales[item.Value.ProductName]++;
 
-                        //reduce quantity to reflect purchase
-                        item.Value.Quantity--;
-                    }
-                    //if balance is not enough
-                    else
-                    {
-                        Console.WriteLine($"Please insert more money.  I'm hungry too.");
+                            //reduce quantity to reflect purchase
+                            item.Value.Quantity--;
+                        }
+                        //if balance is not enough
+                        else
+                        {
+                            Console.WriteLine($"Please insert more money.  I'm hungry too.");
+                        }
                     }
                 }
-                //inform wrong selection
-                else
-                {
-                    Console.WriteLine("Please enter a selection shown.");
-                }
-
+            }
+            //inform wrong selection
+            else
+            {
+                HelperMethods.NotAnOption();
             }
         }
-
-        static void LogMethod(string message)
-        {
-            string logFile = Directory.GetCurrentDirectory() + "\\Log.txt";
-            try
-            {
-                using (StreamWriter sw = new StreamWriter (logFile, true))
-                {
-                    sw.WriteLine(message);
-                }
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine($"Could not print to Log.txt file.");
-                Console.WriteLine(e.Message);
-            }
-        }
-
     }
 }

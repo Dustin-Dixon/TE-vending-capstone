@@ -13,7 +13,7 @@ namespace Capstone
         //customer inserting money
         public void FeedMoney(int dollars)
         {
-            Balance += (decimal)dollars;
+            Balance += dollars;
         }
 
         //customer making a purchase
@@ -23,5 +23,33 @@ namespace Capstone
             TotalSales += price;
         }
 
+        public string MakeChange()
+        {
+            int quarter = 0;
+            int dime = 0;
+            int nickel = 0;
+
+            while (Balance != 0)
+            {
+                if (Balance >= .25M)
+                {
+                    Balance -= .25M;
+                    quarter++;
+                }
+                else if (Balance >= .1M)
+                {
+                    Balance -= .1M;
+                    dime++;
+                }
+                else if (Balance >= .05M)
+                {
+                    Balance -= .05M;
+                    nickel++;
+                }
+            }
+
+            string message = $"Your change is {quarter} quarter(s), {dime} dime(s), and {nickel} nickel(s).";
+            return message;
+        }
     }
 }
