@@ -7,6 +7,9 @@ namespace Capstone
 {
     public static class HelperMethods
     {
+        static string logFile = Directory.GetCurrentDirectory() + "\\Log.txt";
+        static StreamWriter sw = new StreamWriter(logFile);
+
         public static void Greeting()
         {
             Console.WriteLine("*** Welcome to the BEST VENDING MACHINE ever! ***");
@@ -71,15 +74,12 @@ namespace Capstone
         }
 
         public static void LogMethod(string message)
-        {
-            string logFile = Directory.GetCurrentDirectory() + "\\Log.txt";
+        {            
             try
             {
-                using (StreamWriter sw = new StreamWriter(logFile, true))
-                {
                     string fullMessage = $"{DateTime.Now:MM/dd/yyyy} {DateTime.Now:hh:mm:ss tt} {message}";
                     sw.WriteLine(fullMessage);
-                }
+                    sw.Flush();
             }
             catch (Exception e)
             {
