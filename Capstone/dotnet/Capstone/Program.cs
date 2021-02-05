@@ -8,7 +8,6 @@ namespace Capstone
     {
         static void Main(string[] args)
         {
-
             string inventoryList = Directory.GetCurrentDirectory() + "\\vendingmachine.csv";
             //instantiate vending machine (the best btw)
             VendingMachine bestVendingMachineEver = new VendingMachine();
@@ -50,7 +49,6 @@ namespace Capstone
                             ItemGum gum = new ItemGum(itemInfo);
                             bestVendingMachineEver.Inventory.Add(location, gum);
                         }
-
                     }
                 }
             }
@@ -68,8 +66,6 @@ namespace Capstone
             }
 
             MainMenu(bestVendingMachineEver, bank);
-
-
         }
 
         static void MainMenu(VendingMachine machine, Bank bank)
@@ -105,7 +101,6 @@ namespace Capstone
                 {
                     HelperMethods.NotAnOption();
                 }
-
             }
         }
 
@@ -144,9 +139,7 @@ namespace Capstone
                 {
                     HelperMethods.NotAnOption();
                 }
-
             }
-
         }
 
         static void FeedMoney(Bank bank)
@@ -155,18 +148,26 @@ namespace Capstone
             while (!toggle)
             {
                 string userInput = HelperMethods.AskForMoney();
-                try
+                if (!userInput.Contains('-'))
                 {
-                    int userAmount = int.Parse(userInput);
-                    bank.FeedMoney(userAmount);
-                    string message = $"FEED MONEY: {userAmount:C2} {bank.Balance:C2}";
-                    HelperMethods.LogMethod(message);
-                    toggle = true;
+                    try
+                    {
+                        int userAmount = int.Parse(userInput);
+                        bank.FeedMoney(userAmount);
+                        string message = $"FEED MONEY: {userAmount:C2} {bank.Balance:C2}";
+                        HelperMethods.LogMethod(message);
+                        toggle = true;
+                    }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine();
+                        Console.WriteLine("Whole numbers dummy!");
+                    }
                 }
-                catch (Exception e)
+                else
                 {
                     Console.WriteLine();
-                    Console.WriteLine("Whole numbers dummy!");
+                    Console.WriteLine("Think positive.");
                 }
             }
         }
@@ -177,44 +178,39 @@ namespace Capstone
 
             if (machine.Inventory.ContainsKey(userInput))
             {
-                foreach (KeyValuePair<string, Item> item in machine.Inventory)
+                Item item = machine.Inventory[userInput];
+
+                if (item.Quantity == 0)
                 {
-                    //if selection is valid
-                    if (item.Key == userInput)
-                    {
-                        if (item.Value.Quantity == 0)
-                        {
-                            //tell sold out
-                            Console.WriteLine("Sorry, that item is sold out.");
-                        }
-                        //check if balance is enough for item cost
-                        else if (item.Value.Price <= bank.Balance)
-                        {
-                            decimal beforeBalance = bank.Balance;
+                    //tell sold out
+                    Console.WriteLine("Sorry, that item is sold out.");
+                }
+                //check if balance is enough for item cost
+                else if (item.Price <= bank.Balance)
+                {
+                    decimal beforeBalance = bank.Balance;
 
-                            //dispense item and update inventory
-                            bank.UpdateMoney(item.Value.Price);
-                            Console.WriteLine();
-                            Console.WriteLine($"{item.Value.ProductName}|{item.Value.Price}|${bank.Balance} remaining");
-                            Console.WriteLine($"{item.Value.MakeSound()}");
+                    //dispense item and update inventory
+                    bank.UpdateMoney(item.Price);
+                    Console.WriteLine();
+                    Console.WriteLine($"{item.ProductName}|{item.Price}|${bank.Balance} remaining");
+                    Console.WriteLine($"{item.MakeSound()}");
 
-                            //log method for purchases
-                            //place interpolated string into Log method
-                            string auditLine = $"{item.Value.ProductName} {item.Key} ${beforeBalance} ${bank.Balance}";
-                            HelperMethods.LogMethod(auditLine);
+                    //log method for purchases
+                    //place interpolated string into Log method
+                    string auditLine = $"{item.ProductName} {userInput} ${beforeBalance} ${bank.Balance}";
+                    HelperMethods.LogMethod(auditLine);
 
-                            //log for sales of item count
-                            machine.Sales[item.Value.ProductName]++;
+                    //log for sales of item count
+                    machine.Sales[item.ProductName]++;
 
-                            //reduce quantity to reflect purchase
-                            item.Value.Quantity--;
-                        }
-                        //if balance is not enough
-                        else
-                        {
-                            Console.WriteLine($"Please insert more money.  I'm hungry too.");
-                        }
-                    }
+                    //reduce quantity to reflect purchase
+                    item.Quantity--;
+                }
+                //if balance is not enough
+                else
+                {
+                    Console.WriteLine($"Please insert more money.  I'm hungry too.");
                 }
             }
             //inform wrong selection
