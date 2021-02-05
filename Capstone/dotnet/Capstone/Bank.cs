@@ -23,6 +23,7 @@ namespace Capstone
             TotalSales += price;
         }
 
+        //
         public string MakeChange()
         {
             int quarter = 0;

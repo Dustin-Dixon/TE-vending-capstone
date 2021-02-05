@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Capstone
 {
-    class VendingMachine
+    public class VendingMachine
     {
 
         public Dictionary<string, Item> Inventory { get; set; } = new Dictionary<string, Item>();

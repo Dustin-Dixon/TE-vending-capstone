@@ -7,6 +7,12 @@ namespace Capstone
 {
     public static class HelperMethods
     {
+        public static void Greeting()
+        {
+            Console.WriteLine("*** Welcome to the BEST VENDING MACHINE ever! ***");
+            Console.WriteLine();
+            Console.WriteLine("Please select an option.");
+        }
         public static void PrintList(List<string> list)
         {
             foreach (string line in list)
