@@ -48,7 +48,7 @@ namespace Capstone
 
         public static void NotAnOption()
         {
-            Console.WriteLine("Not a valid option homie. Let's select an actual option this time.");
+            Console.WriteLine("Not a valid option. Please select an option listed.");
         }
 
         public static void LogSales(List<string> salesList, decimal sales)
@@ -69,7 +69,7 @@ namespace Capstone
             catch (Exception e)
             {
 
-                Console.WriteLine($"Something ain't right about that there file path.");
+                Console.WriteLine($"Failed to create/find file path.");
             }
         }
 

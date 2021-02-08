@@ -55,7 +55,7 @@ namespace Capstone
             }
             catch (Exception e)
             {
-                Console.WriteLine("Not a valid file path, yo");
+                Console.WriteLine("Not a valid file path");
                 Console.WriteLine(e.Message);
             }
 
@@ -188,14 +188,14 @@ namespace Capstone
                     {
                         //if input has decimal places or not a valid input
                         Console.WriteLine();
-                        Console.WriteLine("Whole numbers dummy!");
+                        Console.WriteLine("Please insert whole dollar amounts.");
                     }
                 }
                 //if input is negative
                 else
                 {
                     Console.WriteLine();
-                    Console.WriteLine("Think positive.");
+                    Console.WriteLine("Please insert whole dollar amounts.");
                 }
             }
         }
@@ -244,7 +244,7 @@ namespace Capstone
                 else
                 {
                     Console.WriteLine();
-                    Console.WriteLine($"Please insert more money.  I'm hungry too.");
+                    Console.WriteLine($"Please insert more money.");
                 }
             }
             //inform wrong selection
